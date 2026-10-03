@@ -5,9 +5,10 @@ on init
     # Library paths
     export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw:/system/lib64/hw
 
-    # USB / ADB
+    # USB controller properties
+    # MTP/ADB gadget configuration is handled by init.usb.rc
     setprop sys.usb.configfs 1
-    setprop sys.usb.controller musb-hdrc
+    setprop sys.usb.controller "musb-hdrc"
     setprop sys.usb.ffs.aio_compat 0
 
     # FBE
@@ -15,90 +16,124 @@ on init
     setprop ro.crypto.state encrypted
 
 
-# Start ADB
+# ---------------------------------------------------------
+# ADB
+# ---------------------------------------------------------
+
 on fs && property:ro.debuggable=0
     start adbd
 
 
+# ---------------------------------------------------------
 # Late filesystem setup
-on late-fs
-    # Wait for Keymaster before mounting filesystems
-    exec_start wait_for_keymaster
+# ---------------------------------------------------------
 
-    # Mount filesystems
+on late-fs
+    exec_start wait_for_keymaster
     mount_all /first_stage_ramdisk/fstab.mt6768 --late
 
 
-# Initialize Linux keyring for FBE
+# ---------------------------------------------------------
+# FBE / Linux keyring
+# ---------------------------------------------------------
+
 on property:ro.crypto.state=encrypted && property:ro.crypto.type=file
     install_keyring
 
 
+# ---------------------------------------------------------
 # Gatekeeper HAL
+# ---------------------------------------------------------
+
 service vendor.gatekeeper-1-0 /vendor/bin/hw/android.hardware.gatekeeper@1.0-service
     interface android.hardware.gatekeeper@1.0::IGatekeeper default
+    class hal
     user root
-    group root
-    disabled
-    seclabel u:r:recovery:s0
-
-
-# Keymaster HAL
-service vendor.keymaster-4-1-beanpod /vendor/bin/hw/android.hardware.keymaster@4.1-service.beanpod
-    interface android.hardware.keymaster@4.0::IKeymasterDevice default
-    interface android.hardware.keymaster@4.1::IKeymasterDevice default
-    user root
-    group root drmrpc
+    group root system
     disabled
     oneshot
     seclabel u:r:recovery:s0
 
 
-# Start Keymaster when crypto is ready
+# ---------------------------------------------------------
+# Keymaster HAL - Beanpod
+# ---------------------------------------------------------
+
+service vendor.keymaster-4-1-beanpod /vendor/bin/hw/android.hardware.keymaster@4.1-service.beanpod
+    interface android.hardware.keymaster@4.0::IKeymasterDevice default
+    interface android.hardware.keymaster@4.1::IKeymasterDevice default
+    class hal
+    user root
+    group root drmrpc system
+    priority -20
+    disabled
+    oneshot
+    seclabel u:r:recovery:s0
+
+
+# ---------------------------------------------------------
+# Crypto services
+# ---------------------------------------------------------
+
 on property:crypto.ready=1
     start vendor.keymaster-4-1-beanpod
 
 
-# Start crypto HALs when hwservicemanager is ready
 on property:hwservicemanager.ready=true
+    start vendor.keymaster-4-1-beanpod
+    start vendor.gatekeeper-1-0
+    start teei_daemon
+
+
+# ---------------------------------------------------------
+# FBE safety trigger
+# ---------------------------------------------------------
+
+on property:ro.crypto.state=encrypted
     start vendor.keymaster-4-1-beanpod
     start vendor.gatekeeper-1-0
 
 
-# Stop crypto services when encryption is unsupported
+# ---------------------------------------------------------
+# Crypto cleanup
+# ---------------------------------------------------------
+
 on property:ro.crypto.state=unsupported
     stop teei_daemon
     stop vendor.keymaster-4-1-beanpod
     stop vendor.gatekeeper-1-0
 
 
-# Stop crypto services when device is unencrypted
 on property:ro.crypto.state=unencrypted
     stop teei_daemon
     stop vendor.keymaster-4-1-beanpod
     stop vendor.gatekeeper-1-0
 
 
-# Stop crypto services after TWRP decryption
 on property:twrp.decrypt.done=true
     stop teei_daemon
     stop vendor.keymaster-4-1-beanpod
     stop vendor.gatekeeper-1-0
 
 
-# Stop crypto services when crypto becomes unavailable
 on property:crypto.ready=0
     stop teei_daemon
     stop vendor.keymaster-4-1-beanpod
     stop vendor.gatekeeper-1-0
 
 
+# ---------------------------------------------------------
 # Vibrator
+# ---------------------------------------------------------
+
 on property:twrp.modules.loaded=true
     start vendor.vibrator-default
 
 
+# ---------------------------------------------------------
 # Boot HALs
+# ---------------------------------------------------------
+
 on boot
-    start boot-hal-1-2
     start health-hal-2-1
+    start boot-hal-1-2
