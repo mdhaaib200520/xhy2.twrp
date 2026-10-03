@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-DEVICE_PATH := device/xiaomi/lake
+DEVICE_PATH := device/xiaomi/pond
 
 # Architecture
 TARGET_ARCH := arm64
@@ -14,7 +14,7 @@ TARGET_CPU_VARIANT := generic
 TARGET_CPU_VARIANT_RUNTIME := cortex-a53
 
 # Bootloader
-TARGET_BOOTLOADER_BOARD_NAME := lake
+TARGET_BOOTLOADER_BOARD_NAME := pond
 TARGET_NO_BOOTLOADER := true
 TARGET_BOARD_PLATFORM := mt6768
 
