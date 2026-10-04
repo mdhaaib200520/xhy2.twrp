@@ -2,67 +2,55 @@ import /init.microtrust.rc
 import /init.vibrator.rc
 
 on init
-    # Library paths
-    export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw:/system/lib64/hw
+    # OrangeFox shared linker compatibility
+    export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw:/system/lib64/hw:/sbin
 
     # USB controller properties
-    # MTP/ADB gadget configuration is handled by init.usb.rc
+    # Actual USB/MTP configuration is handled by init.usb.rc
     setprop sys.usb.configfs 1
     setprop sys.usb.controller "musb-hdrc"
     setprop sys.usb.ffs.aio_compat 0
 
-    # FBE
+    # Recovery crypto state
     setprop ro.crypto.type file
     setprop ro.crypto.state encrypted
-
-
-# ---------------------------------------------------------
-# ADB
-# ---------------------------------------------------------
 
 on fs && property:ro.debuggable=0
     start adbd
 
-
-# ---------------------------------------------------------
-# Late filesystem setup
-# ---------------------------------------------------------
-
 on late-fs
+    # Wait for Keymaster before late mounting
     exec_start wait_for_keymaster
+
+    # Mount partitions
     mount_all /first_stage_ramdisk/fstab.mt6768 --late
 
-
 # ---------------------------------------------------------
-# FBE / Linux keyring
+# FBE / Crypto
 # ---------------------------------------------------------
 
 on property:ro.crypto.state=encrypted && property:ro.crypto.type=file
     install_keyring
 
-
 # ---------------------------------------------------------
-# Gatekeeper HAL
+# Gatekeeper
 # ---------------------------------------------------------
 
 service vendor.gatekeeper-1-0 /vendor/bin/hw/android.hardware.gatekeeper@1.0-service
     interface android.hardware.gatekeeper@1.0::IGatekeeper default
-    class hal
     user root
     group root system
     disabled
     oneshot
     seclabel u:r:recovery:s0
 
-
 # ---------------------------------------------------------
-# Keymaster HAL - Beanpod
+# Keymaster - Beanpod
 # ---------------------------------------------------------
 
 service vendor.keymaster-4-1-beanpod /vendor/bin/hw/android.hardware.keymaster@4.1-service.beanpod
     interface android.hardware.keymaster@4.0::IKeymasterDevice default
     interface android.hardware.keymaster@4.1::IKeymasterDevice default
-    class hal
     user root
     group root drmrpc system
     priority -20
@@ -70,29 +58,17 @@ service vendor.keymaster-4-1-beanpod /vendor/bin/hw/android.hardware.keymaster@4
     oneshot
     seclabel u:r:recovery:s0
 
-
 # ---------------------------------------------------------
-# Crypto services
+# Crypto service triggers
 # ---------------------------------------------------------
 
 on property:crypto.ready=1
     start vendor.keymaster-4-1-beanpod
 
-
 on property:hwservicemanager.ready=true
     start vendor.keymaster-4-1-beanpod
     start vendor.gatekeeper-1-0
     start teei_daemon
-
-
-# ---------------------------------------------------------
-# FBE safety trigger
-# ---------------------------------------------------------
-
-on property:ro.crypto.state=encrypted
-    start vendor.keymaster-4-1-beanpod
-    start vendor.gatekeeper-1-0
-
 
 # ---------------------------------------------------------
 # Crypto cleanup
@@ -103,24 +79,28 @@ on property:ro.crypto.state=unsupported
     stop vendor.keymaster-4-1-beanpod
     stop vendor.gatekeeper-1-0
 
-
 on property:ro.crypto.state=unencrypted
     stop teei_daemon
     stop vendor.keymaster-4-1-beanpod
     stop vendor.gatekeeper-1-0
-
 
 on property:twrp.decrypt.done=true
     stop teei_daemon
     stop vendor.keymaster-4-1-beanpod
     stop vendor.gatekeeper-1-0
 
-
 on property:crypto.ready=0
     stop teei_daemon
     stop vendor.keymaster-4-1-beanpod
     stop vendor.gatekeeper-1-0
 
+# ---------------------------------------------------------
+# OrangeFox FBE safety trigger
+# ---------------------------------------------------------
+
+on property:ro.crypto.state=encrypted
+    start vendor.keymaster-4-1-beanpod
+    start vendor.gatekeeper-1-0
 
 # ---------------------------------------------------------
 # Vibrator
@@ -129,11 +109,12 @@ on property:crypto.ready=0
 on property:twrp.modules.loaded=true
     start vendor.vibrator-default
 
-
 # ---------------------------------------------------------
-# Boot HALs
+# MT6768 HAL services
 # ---------------------------------------------------------
 
 on boot
+    start vendor.keymaster-4-1-beanpod
+    start vendor.gatekeeper-1-0
     start health-hal-2-1
     start boot-hal-1-2
