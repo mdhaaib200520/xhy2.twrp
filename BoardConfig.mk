@@ -169,10 +169,11 @@ TW_INCLUDE_LPTOOLS := true
 TW_INCLUDE_NTFS_3G := true
 
 # Vendor Modules
-TW_LOAD_VENDOR_MODULES := \
+TW_LOAD_VENDOR_MODULES := true
+#TW_LOAD_VENDOR_MODULES := \
     $(shell ls $(DEVICE_PATH)/recovery/root/lib/modules)
 
-# Status Bar UI
+
 TW_STATUS_ICONS_ALIGN := center
 TW_CUSTOM_CPU_POS := "40"
 TW_CUSTOM_CLOCK_POS := "480"
