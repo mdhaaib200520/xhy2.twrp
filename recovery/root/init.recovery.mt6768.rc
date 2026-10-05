@@ -1,129 +1,66 @@
-#
-# init.mt6768.rc
-# Xiaomi lake - MT6768 TWRP recovery
-#
-
 import /init.microtrust.rc
 import /init.vibrator.rc
 
 on init
-    export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw:/system/lib64/hw:/sbin
-
-    setprop sys.usb.configfs 1
-    setprop sys.usb.controller "musb-hdrc"
-    setprop sys.usb.ffs.aio_compat 0
-
-    # FBE
-    setprop ro.crypto.type file
-    setprop ro.crypto.state encrypted
-
-on fs
-    install_keyring
-
-on fs && property:ro.debuggable=0
-    start adbd
+    export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw:/system/lib64/hw
 
 on late-fs
+    # Wait for keymaster
     exec_start wait_for_keymaster
+
+    # Mount RW partitions which need run fsck
     mount_all /first_stage_ramdisk/fstab.mt6768 --late
 
 on property:ro.crypto.state=encrypted && property:ro.crypto.type=file
     install_keyring
 
-
-#
-# Gatekeeper
-#
 service vendor.gatekeeper-1-0 /vendor/bin/hw/android.hardware.gatekeeper@1.0-service
     interface android.hardware.gatekeeper@1.0::IGatekeeper default
     user root
-    group root system
+    group root
     disabled
-    oneshot
     seclabel u:r:recovery:s0
 
-
-#
-# Keymaster
-#
 service vendor.keymaster-4-1-beanpod /vendor/bin/hw/android.hardware.keymaster@4.1-service.beanpod
     interface android.hardware.keymaster@4.0::IKeymasterDevice default
     interface android.hardware.keymaster@4.1::IKeymasterDevice default
     user root
-    group root drmrpc system
-    priority -20
+    group root drmrpc
     disabled
     oneshot
     seclabel u:r:recovery:s0
 
-
-#
-# Start crypto services after HW service manager
-#
-on property:hwservicemanager.ready=true
-    start vendor.keymaster-4-1-beanpod
-    start vendor.gatekeeper-1-0
-    start teei_daemon
-
-
-#
-# crypto.ready
-#
 on property:crypto.ready=1
     start vendor.keymaster-4-1-beanpod
 
-
-#
-# Encrypted state
-#
-on property:ro.crypto.state=encrypted
-    start vendor.keymaster-4-1-beanpod
+on property:hwservicemanager.ready=true
+    start vendor.keymaster-4-1-beanpod 
     start vendor.gatekeeper-1-0
 
-
-#
-# Unsupported / unencrypted
-#
 on property:ro.crypto.state=unsupported
     stop teei_daemon
-    stop vendor.keymaster-4-1-beanpod
+    stop vendor.keymaster-4-1-beanpod 
     stop vendor.gatekeeper-1-0
-
 
 on property:ro.crypto.state=unencrypted
     stop teei_daemon
-    stop vendor.keymaster-4-1-beanpod
+    stop vendor.keymaster-4-1-beanpod 
     stop vendor.gatekeeper-1-0
 
-
-#
-# TWRP finished decrypting
-#
 on property:twrp.decrypt.done=true
     stop teei_daemon
-    stop vendor.keymaster-4-1-beanpod
+    stop vendor.keymaster-4-1-beanpod 
     stop vendor.gatekeeper-1-0
 
-
-#
-# crypto failure
-#
 on property:crypto.ready=0
     stop teei_daemon
-    stop vendor.keymaster-4-1-beanpod
+    stop vendor.keymaster-4-1-beanpod 
     stop vendor.gatekeeper-1-0
 
-
-#
-# TWRP vendor modules loaded
-#
-on property:twrp.modules.loaded=true
+# Vibrator service
+on property:twrp.modules.loaded=true 
     start vendor.vibrator-default
 
-
-#
-# Boot
-#
 on boot
     start boot-hal-1-2
     start health-hal-2-1
