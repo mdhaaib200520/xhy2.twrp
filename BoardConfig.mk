@@ -9,13 +9,10 @@ TW_INCLUDE_REPACKTOOLS := true
 TW_HAS_MTP := true
 
 # আপনার ডিভাইস যদি এওওএস (EROFS) বা সুপার পার্টিশন ব্যবহার করে
-TW_EXCLUDE_APEX := false
-# ডাইনামিক পার্টিশন চালু করা
-PRODUCT_USE_DYNAMIC_PARTITIONS := true
-PRODUCT_USE_DYNAMIC_PARTITION_SIZE := true
 
-# অ্যান্ড্রয়েড ১৫ (API 35) এর জন্য Retrofit অবশ্যই false হতে হবে (কারণ এটি নতুন ডিভাইস)
-PRODUCT_RETROFIT_DYNAMIC_PARTITIONS := false
+# ডাইনামিক পার্টিশন চালু ক
+
+
 
 # For building with minimal manifest
 ALLOW_MISSING_DEPENDENCIES := true
