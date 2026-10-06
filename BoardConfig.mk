@@ -124,18 +124,6 @@ BOARD_SUPER_PARTITION_GROUPS := main
 
 BOARD_MAIN_SIZE := 9122611200
 
-# lake uses the following logical partitions inside
-# the main dynamic-partition group.
-#
-# Confirmed from recovery.fstab:
-#   system
-#   system_ext
-#   product
-#   vendor
-#   system_dlkm
-#   vendor_dlkm
-#   odm_dlkm
-
 BOARD_MAIN_PARTITION_LIST := \
     system \
     system_ext \
@@ -339,17 +327,24 @@ TWRP_INCLUDE_LOGCAT := true
 
 # ============================================================
 # Vendor Modules
-TW_LOAD_VENDOR_BOOT_MODULES := true
-TW_LOAD_VENDOR_MODULES_EXCLUDE_GKI := true
-TW_LOAD_VENDOR_MODULES := "mt6358-accdet.ko xiaomi_touch.ko lct_tp.ko nt36528_spi.ko nt36528_spi.ko ft8057m_spi.ko ft8057p_spi.ko icnl9916_spi.ko"
+# ============================================================
 
-#
-# Intentionally disabled because the required module files
-# are not present in the current device tree.
-#
+# Disabled until the required .ko files are confirmed
+# to exist in the device tree.
+
+# TW_LOAD_VENDOR_BOOT_MODULES := true
+# TW_LOAD_VENDOR_MODULES_EXCLUDE_GKI := true
+# TW_LOAD_VENDOR_MODULES := \
+#     "mt6358-accdet.ko \
+#     xiaomi_touch.ko \
+#     lct_tp.ko \
+#     nt36528_spi.ko \
+#     ft8057m_spi.ko \
+#     ft8057p_spi.ko \
+#     icnl9916_spi.ko"
 
 # ============================================================
 # Maintainer
 # ============================================================
 
-TW_DEVICE_VERSION := 
+TW_DEVICE_VERSION := "lake"
