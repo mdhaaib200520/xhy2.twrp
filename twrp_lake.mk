@@ -19,3 +19,5 @@ PRODUCT_MANUFACTURER := xiaomi
 PRODUCT_GMS_CLIENTID_BASE := android-xiaomi
 PRODUCT_USE_DYNAMIC_PARTITIONS := true
 PRODUCT_USE_DYNAMIC_PARTITION_SIZE := true
+# অ্যান্ড্রয়েড ১৫ (API 35) এর জন্য Retrofit অবশ্যই false হতে হবে (কারণ এটি নতুন ডিভাইস)
+PRODUCT_RETROFIT_DYNAMIC_PARTITIONS := false
