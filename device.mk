@@ -1,4 +1,3 @@
-
 # Configure Virtual A/B
 $(call inherit-product, $(SRC_TARGET_DIR)/product/virtual_ab_ota.mk)
 
@@ -24,6 +23,7 @@ PRODUCT_PROPERTY_OVERRIDES += ro.twrp.vendor_boot=true
 AB_OTA_UPDATER := true
 ENABLE_VIRTUAL_AB := true
 TARGET_ENFORCE_AB_OTA_PARTITION_LIST := true
+
 AB_OTA_PARTITIONS += \
     apusys \
     audio_dsp \
@@ -59,7 +59,7 @@ AB_OTA_PARTITIONS += \
     vendor_boot \
     vendor_dlkm \
     mi_ext
-	
+
 # Update engine
 PRODUCT_PACKAGES_DEBUG += \
     update_engine_client
@@ -77,7 +77,7 @@ AB_OTA_POSTINSTALL_CONFIG += \
     FILESYSTEM_TYPE_system=erofs \
     POSTINSTALL_OPTIONAL_system=true
 
-# create pl dev
+# Create PL device
 PRODUCT_PACKAGES += \
     create_pl_dev \
     create_pl_dev.recovery
@@ -87,7 +87,7 @@ PRODUCT_PACKAGES += \
 PRODUCT_SHIPPING_API_LEVEL := 32
 PRODUCT_TARGET_VNDK_VERSION := 35
 
-# fastbootd
+# Fastbootd
 PRODUCT_PACKAGES += \
     android.hardware.fastboot@1.1-impl-mock \
     fastbootd
@@ -104,10 +104,6 @@ PRODUCT_PACKAGES += \
     android.hardware.boot@1.2-impl.recovery \
     android.hardware.boot@1.2-service
 
-PRODUCT_PACKAGES += \
-    create_pl_dev \
-    create_pl_dev.recovery
-
 # Health HAL
 PRODUCT_PACKAGES += \
     android.hardware.health@2.1-impl \
@@ -115,9 +111,10 @@ PRODUCT_PACKAGES += \
     android.hardware.health@2.1-impl.recovery \
     android.hardware.health@2.1-service.rc
 
-# Partitions
+# Dynamic partitions
 PRODUCT_USE_DYNAMIC_PARTITIONS := true
 PRODUCT_USE_DYNAMIC_PARTITION_SIZE := true
+
 # Soong namespaces
 PRODUCT_SOONG_NAMESPACES += \
     $(LOCAL_PATH)
