@@ -48,6 +48,7 @@ AB_OTA_PARTITIONS += \
     spmfw \
     sspm \
     system \
+    system_dlkm \
     system_ext \
     tee \
     vbmeta \
