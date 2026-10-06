@@ -7,7 +7,7 @@ DEVICE_PATH := device/xiaomi/lake
 # TWRP Dynamic Partitions Configuration
 TW_INCLUDE_REPACKTOOLS := true
 TW_HAS_MTP := true
-
+BOARD_HAS_LARGE_DISK := true
 # আপনার ডিভাইস যদি এওওএস (EROFS) বা সুপার পার্টিশন ব্যবহার করে
 
 # ডাইনামিক পার্টিশন চালু ক
