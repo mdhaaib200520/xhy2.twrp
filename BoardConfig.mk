@@ -124,12 +124,16 @@ BOARD_SUPER_PARTITION_GROUPS := main
 
 BOARD_MAIN_SIZE := 9122611200
 
+# IMPORTANT:
+# system_dlkm is intentionally NOT included here.
+# TWRP 12.1 build system rejects system_dlkm in
+# BOARD_MAIN_PARTITION_LIST.
+
 BOARD_MAIN_PARTITION_LIST := \
     system \
     system_ext \
     product \
     vendor \
-    system_dlkm \
     vendor_dlkm \
     odm_dlkm
 
@@ -142,6 +146,13 @@ TARGET_COPY_OUT_SYSTEM_EXT := system_ext
 TARGET_COPY_OUT_PRODUCT := product
 TARGET_COPY_OUT_VENDOR := vendor
 
+# system_dlkm exists on the device but is handled separately
+# from BOARD_MAIN_PARTITION_LIST.
+TARGET_COPY_OUT_SYSTEM_DLKM := system_dlkm
+
+TARGET_COPY_OUT_VENDOR_DLKM := vendor_dlkm
+TARGET_COPY_OUT_ODM_DLKM := odm_dlkm
+
 # ============================================================
 # Filesystems
 # ============================================================
@@ -150,7 +161,13 @@ BOARD_SYSTEMIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_SYSTEM_EXTIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_PRODUCTIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
+
 BOARD_USERDATAIMAGE_FILE_SYSTEM_TYPE := f2fs
+
+# DLKM partitions
+BOARD_VENDOR_DLKMIMAGE_FILE_SYSTEM_TYPE := ext4
+BOARD_ODM_DLKMIMAGE_FILE_SYSTEM_TYPE := ext4
+BOARD_SYSTEM_DLKMIMAGE_FILE_SYSTEM_TYPE := ext4
 
 TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
@@ -347,4 +364,4 @@ TWRP_INCLUDE_LOGCAT := true
 # Maintainer
 # ============================================================
 
-TW_DEVICE_VERSION := "lake"
+TW_DEVICE_VERSION := 
